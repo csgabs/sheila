@@ -1,0 +1,19 @@
+### Requisição GET para listar jogadores
+GET http://localhost:8081/jogadores/listar HTTP/1.1
+Content-Type: application/json
+
+###
+
+### Requisição POST para inserir um novo jogador
+POST http://localhost:8081/jogadores/inserir HTTP/1.1
+Content-Type: application/json
+
+{
+  "nome": "Sheila",
+  "apelido": "Sheila A",
+  "idade": 25,
+  "contextra": "Sim",
+  "plataforma": "PC",
+  "jogo": 1
+}
+
