@@ -2,8 +2,9 @@
 namespace App\model;
 
 use App\model\Jogo;
+use JsonSerializable;
 
-class Jogador {
+class Jogador implements JsonSerializable {
 
     private ?int $id;
     private ?string $nomejogador;
@@ -12,6 +13,19 @@ class Jogador {
     private ?string $plataforma;
     private ?string $contextra;
     private ?Jogo $jogo;
+
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'id' => $this->id,
+            'nomejogador' => $this->nomejogador,
+            'apelido' => $this->apelido,
+            'idade' => $this->idade,
+            'plataforma' => $this->plataforma,
+            'contextra' => $this->contextra,
+            'jogo' => $this->jogo ? $this->jogo->jsonSerialize() : null
+        ];
+    }
     
     
     /**

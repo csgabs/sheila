@@ -1,7 +1,9 @@
 <?php 
 namespace App\model;
 
-class Jogo {
+use JsonSerializable;
+
+class Jogo implements JsonSerializable {
 
     private ?int $id;
     private ?string $nome;
@@ -9,6 +11,14 @@ class Jogo {
 
     public function __toString() {
         return $this->nome . " (" . $this->genero . ")";
+    }
+
+    public function jsonSerialize(): mixed {
+        return [
+            'id' => $this->id,
+            'nome' => $this->nome,
+            'genero' => $this->genero
+        ];
     }
 
     /**
