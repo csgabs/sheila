@@ -1,5 +1,8 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
+
+//cria uma api pra listar e inserir novos jogadores
+
+require __DIR__ . '/vendor/autoload.php'; //crrega as classes automaticamente
 
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -8,9 +11,10 @@ use App\controller\JogadorController;
 use App\model\Jogador;
 use App\model\Jogo;
 
+//inicializa a aplicação Slim, que vai gerenciar as rotas.
 $app = AppFactory::create();
 
-// Definindo uma rota GET
+//definindo uma rota GET
 $app->get('/jogadores/listar', function (Request $request, Response $response) {
     $controller = new JogadorController();
     $listaDeJogadores = $controller->listar();
@@ -29,7 +33,7 @@ $app->post('/jogadores/inserir', function (Request $request, Response $response)
     $rawBody = $request->getBody()->getContents(); // Pega o corpo da requisição
     $dados = json_decode($rawBody, true); // Decodifica o JSON
 
-    // Validação e tratamento dos dados
+    // validação e converte pra json
     $nomejogador = trim($dados['nome']) ?: null;
     $apelido = trim($dados['apelido']) ?: null;
     $idade = is_numeric($dados['idade']) ? $dados['idade'] : null;
@@ -37,7 +41,7 @@ $app->post('/jogadores/inserir', function (Request $request, Response $response)
     $plataforma = trim($dados['plataforma']) ?: null;
     $jogo = is_numeric($dados['jogo']) ? $dados['jogo'] : null;
 
-    // Verificação de campos obrigatórios
+    // Verifica os campos obrigatórios
     if (!$nomejogador || !$apelido || !$idade || !$plataforma) {
         $data = [
             'status' => 400,
@@ -48,7 +52,7 @@ $app->post('/jogadores/inserir', function (Request $request, Response $response)
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    // Criar o objeto Jogador
+    // criar o objeto Jogador
     $jogador = new Jogador();
     $jogador->setId(0);
     $jogador->setNomeJogador($nomejogador);
@@ -57,7 +61,7 @@ $app->post('/jogadores/inserir', function (Request $request, Response $response)
     $jogador->setPlataforma($plataforma);
     $jogador->setContExtra($contextra);
     
-    // Associar o Jogo, se fornecido
+    // associar o Jogo, se fornecido
     if ($jogo) {
         $jogoObj = new Jogo();
         $jogoObj->setId($jogo);
@@ -78,5 +82,5 @@ $app->post('/jogadores/inserir', function (Request $request, Response $response)
     return $response->withHeader('Content-Type', 'application/json');
 });
 
-// Rodando a aplicação
+// roda a api
 $app->run();
