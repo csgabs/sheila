@@ -14,6 +14,16 @@ class Jogador implements JsonSerializable {
     private ?string $contextra;
     private ?Jogo $jogo;
 
+    public function __construct() {
+        $this->id = 0;
+        $this->nomejogador = null;
+        $this->apelido = null;
+        $this->idade = null;
+        $this->plataforma = null;
+        $this->contextra = null;
+        $this->jogo = null;
+    }
+
     public function jsonSerialize(): mixed
     {
         return [

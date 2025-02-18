@@ -1,86 +1,27 @@
 <?php
+//C:\xampp\htdocs\mvc_jogador\index.php
 
-//cria uma api pra listar e inserir novos jogadores
-
-require __DIR__ . '/vendor/autoload.php'; //crrega as classes automaticamente
+require __DIR__ . '/vendor/autoload.php'; 
 
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use Slim\Exception\HttpNotFoundException;
 use App\controller\JogadorController;
 use App\model\Jogador;
 use App\model\Jogo;
 
-//inicializa a aplicação Slim, que vai gerenciar as rotas.
 $app = AppFactory::create();
+$app->setBasePath("/mvc_jogador");
 
-//definindo uma rota GET
-$app->get('/jogadores/listar', function (Request $request, Response $response) {
-    $controller = new JogadorController();
-    $listaDeJogadores = $controller->listar();
-    $data = [
-        "status" => 200,
-        "message" => "Jogadores listados com sucesso!",
-        "jogadores" => $listaDeJogadores
-    ];
-    $response->getBody()->write(json_encode($data));
-    return $response->withHeader('Content-Type', 'application/json');
+$app->addBodyParsingMiddleware();
+$app->addErrorMiddleware(true, false, false);
+
+$app->get('/jogadores/listar', JogadorController::class . ":listar");
+$app->post('/jogadores/inserir', JogadorController::class . ":inserir");
+
+$app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($request, $response) {
+    throw new HttpNotFoundException($request, "Esta rota não existe na API!");
 });
 
-// Rota para inserir jogador
-$app->post('/jogadores/inserir', function (Request $request, Response $response) {
-    // Capturar os dados do corpo da requisição
-    $rawBody = $request->getBody()->getContents(); // Pega o corpo da requisição
-    $dados = json_decode($rawBody, true); // Decodifica o JSON
-
-    // validação e converte pra json
-    $nomejogador = trim($dados['nome']) ?: null;
-    $apelido = trim($dados['apelido']) ?: null;
-    $idade = is_numeric($dados['idade']) ? $dados['idade'] : null;
-    $contextra = trim($dados['contextra']) ?: null;
-    $plataforma = trim($dados['plataforma']) ?: null;
-    $jogo = is_numeric($dados['jogo']) ? $dados['jogo'] : null;
-
-    // Verifica os campos obrigatórios
-    if (!$nomejogador || !$apelido || !$idade || !$plataforma) {
-        $data = [
-            'status' => 400,
-            'message' => 'Campos obrigatórios não preenchidos.'
-        ];
-    
-        $response->getBody()->write(json_encode($data));
-        return $response->withHeader('Content-Type', 'application/json');
-    }
-
-    // criar o objeto Jogador
-    $jogador = new Jogador();
-    $jogador->setId(0);
-    $jogador->setNomeJogador($nomejogador);
-    $jogador->setApelido($apelido);
-    $jogador->setIdade($idade);
-    $jogador->setPlataforma($plataforma);
-    $jogador->setContExtra($contextra);
-    
-    // associar o Jogo, se fornecido
-    if ($jogo) {
-        $jogoObj = new Jogo();
-        $jogoObj->setId($jogo);
-        $jogador->setJogo($jogoObj);
-    } else {
-        $jogador->setJogo(null);
-    }
-
-    $jogadorCont = new JogadorController();
-    $jogadorCont->inserir($jogador);
-
-    $data = [
-        'status' => 201,
-        'message' => 'Jogador inserido com sucesso!'
-    ];
-
-    $response->getBody()->write(json_encode($data));
-    return $response->withHeader('Content-Type', 'application/json');
-});
-
-// roda a api
 $app->run();

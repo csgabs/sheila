@@ -12,7 +12,9 @@ use App\model\Jogo;
 
 class JogadorDAO {
 
-    //Método para buscar todos os jogadores da base de dados
+    private $conn;
+    private $jogadorMapper;
+
     public function list() {
         $conn = Connection::getConnection();
 
@@ -23,10 +25,8 @@ class JogadorDAO {
         $stm = $conn->prepare($sql);
         $stm->execute();
         $result = $stm->fetchAll();
-        //var_dump($result);
 
         $jogadores = $this->mapJogadores($result);
-        //var_dump($jogadores);
         return $jogadores;
 
     }
@@ -48,20 +48,27 @@ class JogadorDAO {
         if(count($jogadores) > 0)
             return $jogadores[0];
         
-        //Retorna nulo caso nenhum jogador tenha sido encontrado
         return null;
     }
 
     public function insert(Jogador $jogador) {
-        $conn = Connection::getConnection();
+        $sql = 'INSERT INTO jogadores (nomejogador, apelido, idade,plataforma,contextra, id_jogo) VALUES (:nomejogador, :apelido, :idade, :plataforma, :contextra, :id_jogo)';
 
-        $sql = "INSERT INTO jogadores (nomejogador,apelido,idade, plataforma, contextra, id_jogo)
-                VALUES (?, ?, ?, ?, ?, ?)";
-        $stm = $conn->prepare($sql);
-        $stm->execute(array($jogador->getNomeJogador(), $jogador->getApelido(), $jogador->getIdade(),
-                                    $jogador->getPlataforma(), $jogador->getContExtra(), 
-                                    $jogador->getJogo()->getId()));
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue("nomejogador", $jogador->getNomeJogador());
+        $stmt->bindValue("apelido", $jogador->getApelido());
+        $stmt->bindValue("idade", $jogador->getIdade());
+        $stmt->bindValue("plataforma", $jogador->getPlataforma());
+        $stmt->bindValue("contextra", $jogador->getContExtra());
+        $stmt->bindValue("id_jogo", $jogador->getId());
+        $stmt->execute();
+
+        $id = $this->conn->lastInsertId();
+        $jogador->setId($id);
+        return $jogador;
     }
+
+
 
     public function update(Jogador $jogador) {
         $conn = Connection::getConnection();
@@ -85,12 +92,10 @@ class JogadorDAO {
         $stm->execute(array($id));
     }
 
-    //Método que mapeia os registros do banco em objetos Jogador
     private function mapJogadores($registros) {
         $jogadores = array();
 
         foreach($registros as $reg) {
-            //Para cada registro, criar um objeto Jogador
             $jogador = new Jogador();
             $jogador->setId($reg["id"]);
             $jogador->setNomeJogador($reg["nomejogador"]);
